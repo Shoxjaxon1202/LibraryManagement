@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("kutubxona")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c49ec618b3e7daca186d470daa9a06dfa6dee98c")]
 [assembly: System.Reflection.AssemblyProductAttribute("kutubxona")]
 [assembly: System.Reflection.AssemblyTitleAttribute("kutubxona")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

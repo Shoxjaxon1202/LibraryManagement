@@ -1,4 +1,4 @@
-﻿
+﻿using Spectre.Console;
 using System;
 using System.Collections.Generic;
 
@@ -11,8 +11,8 @@ class Program
     public static void Main()
     {
         string? menu = null;
-        Console.WriteLine("Hello! This Library Management system allows you to borrow, add, delete, update books and magazines, and perform other tasks.");
         Console.Clear();
+        AnsiConsole.Markup("[blue]Hello! This Library Management system allows you to borrow, add, delete, update books and magazines, and perform other tasks.[/]");
         while (menu != "0")
         {
             menu = Menu().ToLower();
@@ -41,7 +41,7 @@ class Program
                     Users();
                     break;
                 case "0" or "close":
-                    Console.WriteLine("The program is finishing....");
+                    AnsiConsole.MarkupLine("[red]The program is finishing....[/]");
                     break;
                 default:
                     Console.WriteLine("Invalid menu");
@@ -50,546 +50,662 @@ class Program
             }
         }
     }
-
     private static void LibraryReservations()
+{
+    while (true)
     {
-        System.Console.WriteLine("Library Reservations");
-       while (true)
-        {
-            Console.WriteLine("1. Reserve");
-            Console.WriteLine("2. Available");
-            Console.WriteLine("3. Borrowed");
-            Console.WriteLine("0. Exit");
-            Console.Write("Select an option (number or name): ");
-            string choice = Console.ReadLine()?.ToLower().Trim()!;
+        AnsiConsole.Clear();
+        AnsiConsole.MarkupLine("[bold cyan]Library Reservations[/]");
 
-            switch (choice)
-            {
-                case "1" or "reserve":
-                   Bron();
-                    break;
-                case "2" or "available":
-                    if (books.Count == 0 && magazines.Count == 0)
-                    {
-                        Console.WriteLine("No books or magazines have been added yet. Please add them first.");
-                        Thread.Sleep(2000);
-                    }
-                    else
-                    {
-                        System.Console.WriteLine("Available books and magazines");
-                        Available();
-                    }
-                    break;
-                case "3" or "borrowed":
-                    Borrowed();
-                    break;
-                case "0" or "exit":
-                    return;
-                default:
-                    Console.WriteLine("Invalid selection. Try again.");
-                    Thread.Sleep(2000);
-                    break;
-            }
+        var menuSelection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[yellow]Select an option:[/]")
+                .PageSize(4)
+                .AddChoices("Reserve", "Available", "Borrowed", "Exit")
+                .HighlightStyle(new Style(foreground: Color.Cyan1))
+        );
+
+        switch (menuSelection.ToLower())
+        {
+            case "reserve":
+                Bron();
+                break;
+
+            case "available":
+                if (books.Count == 0 && magazines.Count == 0)
+                {
+                    AnsiConsole.MarkupLine("[red]No books or magazines have been added yet. Please add them first.[/]");
+                    Console.WriteLine();
+                    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[bold yellow]Available books and magazines:[/]");
+                    Available();
+                }
+                break;
+
+            case "borrowed":
+                Borrowed();
+                break;
+
+            case "exit":
+                AnsiConsole.MarkupLine("[bold red]Exiting the Library Reservation system...[/]");
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(1000));
+                return;
+
+            default:
+                AnsiConsole.MarkupLine("[red]Invalid selection. Try again.[/]");
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+                break;
         }
     }
+}
 
 private static void Borrowed()
 {
-    bool hasBorrowedBooks = false;     // Olingan kitoblar flag
-    bool hasBorrowedMagazines = false; // Olingan magazinlar flag
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Borrowed Books and Magazines[/]");
 
-    // Hech qanday kitob ham, magazin ham mavjud emasligini tekshirish
+    bool hasBorrowedBooks = false;
+    bool hasBorrowedMagazines = false;
+
     if (books.Count == 0 && magazines.Count == 0)
     {
-        System.Console.WriteLine("No books or magazines available to borrow.");
+        AnsiConsole.MarkupLine("[red]No books or magazines available to borrow.[/]");
         Thread.Sleep(2000);
         return;
     }
-    // Kitoblar bo'yicha tekshiruv
+
     if (books.Count != 0)
     {
-        System.Console.WriteLine();
-        foreach (var book in books)
+        AnsiConsole.MarkupLine("[bold yellow]Borrowed Books:[/]");
+        foreach (var book in books.Where(b => b.isReversed))
         {
-            if (book.isReversed) // Kitob qarzga olinganmi tekshiradi
-            {
-                System.Console.WriteLine(book.ToString());
-                hasBorrowedBooks = true;
-            }
+            AnsiConsole.MarkupLine($"[green]{book.ToString()}[/]");
+            hasBorrowedBooks = true;
         }
-        System.Console.WriteLine();
+
         if (!hasBorrowedBooks)
         {
-            System.Console.WriteLine();
-            System.Console.WriteLine("No books have been borrowed.");
-            Thread.Sleep(2000);
-            System.Console.WriteLine();
+            AnsiConsole.MarkupLine("[red]No books have been borrowed.[/]");
         }
     }
 
-    // Magazinlar bo'yicha tekshiruv
+    Console.WriteLine();
+
     if (magazines.Count != 0)
     {
-        System.Console.WriteLine();
-        foreach (var magazine in magazines)
+        AnsiConsole.MarkupLine("[bold yellow]Borrowed Magazines:[/]");
+        foreach (var magazine in magazines.Where(m => m.isReversed))
         {
-            if (magazine.isReversed) // Magazin qarzga olinganmi tekshiradi
-            {
-                System.Console.WriteLine(magazine.ToString());
-                hasBorrowedMagazines = true;
-            }
+            AnsiConsole.MarkupLine($"[green]{magazine.ToString()}[/]");
+            hasBorrowedMagazines = true;
         }
-        System.Console.WriteLine();
+
         if (!hasBorrowedMagazines)
         {
-            System.Console.WriteLine();
-            System.Console.WriteLine("No magazines have been borrowed.");
-            Thread.Sleep(2000);
-            System.Console.WriteLine();
+            AnsiConsole.MarkupLine("[red]No magazines have been borrowed.[/]");
         }
     }
 
-    // Agar hech narsa qarzga olinmagan bo'lsa
+    Console.WriteLine();
+
     if (!hasBorrowedBooks && !hasBorrowedMagazines)
     {
-        System.Console.WriteLine("No books or magazines have been borrowed.");
+        AnsiConsole.MarkupLine("[red]No books or magazines have been borrowed.[/]");
     }
+
+    Console.WriteLine();
+    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
 }
-
-
-
-   private static void Available()
+private static void Available()
 {
-    bool hasAvailableBooks = false;     // Mavjud kitoblar flagi
-    bool hasAvailableMagazines = false; // Mavjud magazinlar flagi
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Available Books and Magazines[/]");
 
-    // Kitoblar bo'yicha tekshiruv
-    foreach (var book in books)
+    bool hasAvailableBooks = false;
+    bool hasAvailableMagazines = false;
+
+    AnsiConsole.MarkupLine("[bold yellow]Available Books:[/]");
+    foreach (var book in books.Where(b => !b.isReversed))
     {
-        if (!book.isReversed) // Agar kitob qarzga olinmagan bo'lsa
-        {
-            System.Console.WriteLine(book.ToString());
-            hasAvailableBooks = true;
-        }
+        AnsiConsole.MarkupLine($"[green]{book.ToString()}[/]");
+        hasAvailableBooks = true;
     }
 
-    // Magazinlar bo'yicha tekshiruv
-    foreach (var magazine in magazines)
+    if (!hasAvailableBooks)
     {
-        if (!magazine.isReversed) // Agar magazin qarzga olinmagan bo'lsa
-        {
-            System.Console.WriteLine(magazine.ToString());
-            hasAvailableMagazines = true;
-        }
+        AnsiConsole.MarkupLine("[red]No available books at the moment.[/]");
     }
 
-    // Agar mavjud kitoblar yoki magazinlar bo'lmasa
+    Console.WriteLine();
+
+    AnsiConsole.MarkupLine("[bold yellow]Available Magazines:[/]");
+    foreach (var magazine in magazines.Where(m => !m.isReversed))
+    {
+        AnsiConsole.MarkupLine($"[green]{magazine.ToString()}[/]");
+        hasAvailableMagazines = true;
+    }
+
+    if (!hasAvailableMagazines)
+    {
+        AnsiConsole.MarkupLine("[red]No available magazines at the moment.[/]");
+    }
+
+    Console.WriteLine();
+
     if (!hasAvailableBooks && !hasAvailableMagazines)
     {
-        System.Console.WriteLine("No available books or magazines at the moment.");
+        AnsiConsole.MarkupLine("[red]No available books or magazines at the moment.[/]");
+        Console.WriteLine();
     }
 
-    System.Console.WriteLine();
-    System.Console.WriteLine("If you want to read the news, please reserve first.");
+    Console.WriteLine();
+    AnsiConsole.MarkupLine("[bold blue]If you want to read, please reserve first.[/]");
+    Console.WriteLine();
+    
+    AnsiConsole.MarkupLine("[bold yellow]Press any key to go back to the main menu...[/]");
+    Console.ReadKey(true);
+}
+
+ private static void Users()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Users[/]");
+    
+    if (users.Count == 0)
+    {
+        AnsiConsole.Markup("[red]No users found.[/]");
+        Console.WriteLine();
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+        return;
+    }
+
+    foreach (var user in users)
+    {
+        AnsiConsole.MarkupLine(user.ToString());
+    }
+
+    AnsiConsole.Markup("[yellow]Press any key to continue...[/]");
+    Console.ReadKey();
 }
 
 
-    private static void Users()
-    {
-        System.Console.WriteLine("Users");
-        foreach(var i in users)
-        {
-            System.Console.WriteLine(i.ToString());
-        }
-    }
+
 
     private static void RegisterMenu()
     {
         while (true)
         {
-            Console.Clear();
-            Console.WriteLine("1. Register");
-            Console.WriteLine("2. Update");
-            Console.WriteLine("3. Delete");
-            Console.WriteLine("0. Exit");
-            Console.Write("Select an option (number or name): ");
-            string choice = Console.ReadLine()?.ToLower().Trim()!;
+            AnsiConsole.Clear();
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[green]Select an option:[/]")
+                    .AddChoices(new[] { "Register", "Update", "Delete", "Exit" })
+            );
 
-            switch (choice)
+            switch (choice.ToLower())
             {
-                case "1" or "register":
+                case "register":
                     Register();
                     break;
-                case "2" or "update":
+
+                case "update":
                     if (users.Count == 0)
                     {
-                        Console.WriteLine("No users registered. Please register first.");
-                        Thread.Sleep(2000);
+                        AnsiConsole.MarkupLine("[red]No users registered. Please register first.[/]");
+                        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
                     }
                     else
                     {
                         UpdateUser();
                     }
                     break;
-                case "3" or "delete":
+
+                case "delete":
                     if (users.Count == 0)
                     {
-                        Console.WriteLine("No users registered. Please register first.");
-                        Thread.Sleep(2000);
+                        AnsiConsole.MarkupLine("[red]No users registered. Please register first.[/]");
+                        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
                     }
                     else
                     {
                         DeleteUser();
                     }
                     break;
-                case "0" or "exit":
+
+                case "exit":
                     return;
+
                 default:
-                    Console.WriteLine("Invalid selection. Try again.");
-                    Thread.Sleep(2000);
+                    AnsiConsole.MarkupLine("[red]Invalid selection. Try again.[/]");
+                    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
                     break;
             }
         }
     }
 
-    private static void Register()
+
+private static void Register()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold green]Registration:[/]");
+
+    string name = AnsiConsole.Ask<string>("Enter your [yellow]name[/]:");
+
+    while (string.IsNullOrWhiteSpace(name))
     {
-        string name;
-        int age;
-        string password;
-
-        Console.WriteLine("Registration:");
-        Console.Write("Enter your name: ");
-        name = Console.ReadLine()!.Trim();
-
-        while (string.IsNullOrWhiteSpace(name))
-        {
-            Console.Write("Name cannot be empty. Please enter again: ");
-            name = Console.ReadLine()!.Trim();
-        }
-
-        Console.Write("Enter your age: ");
-        while (!int.TryParse(Console.ReadLine(), out age) || age <= 0 || age >= 100)
-        {
-            Console.Write("Invalid age. Please enter a valid age (0-100): ");
-        }
-
-        Console.Write("Enter your password (at least 6 characters): ");
-        password = Console.ReadLine()!.Trim();
-
-        while (string.IsNullOrWhiteSpace(password) || password.Length < 6)
-        {
-            Console.Write("Password must be at least 6 characters. Try again: ");
-            password = Console.ReadLine()!.Trim();
-        }
-
-        User newUser = new User { Name = name, Year = age, Password = password };
-        users.Add(newUser);
-
-        Console.WriteLine("Registration successful!");
-        Console.WriteLine($"Name: {newUser.Name}, Age: {newUser.Year}, Password: {new string('*', newUser.Password.Length)}");
-
-        Thread.Sleep(3000);
+        AnsiConsole.Markup("[red]Name cannot be empty. Please enter again:[/]");
+        name = AnsiConsole.Ask<string>("Enter your [yellow]name[/]:");
     }
 
-    private static void UpdateUser()
+    int age = AnsiConsole.Prompt(
+        new TextPrompt<int>("Enter your [yellow]age[/]:")
+            .PromptStyle("yellow")
+            .Validate(age => age > 0 && age < 100 
+                ? ValidationResult.Success() 
+                : ValidationResult.Error("[red]Please enter a valid age between 1 and 99.[/]"))
+    );
+
+    string password = AnsiConsole.Prompt(
+        new TextPrompt<string>("Enter your [yellow]password[/] (at least 6 characters):")
+            .PromptStyle("yellow")
+            .Secret()
+            .Validate(pw => pw.Length >= 6 
+                ? ValidationResult.Success() 
+                : ValidationResult.Error("[red]Password must be at least 6 characters.[/]"))
+    );
+
+    User newUser = new User { Name = name, Year = age, Password = password };
+    users.Add(newUser);
+
+    AnsiConsole.MarkupLine("[green]Registration successful![/]");
+    AnsiConsole.MarkupLine($"[yellow]Name:[/] {newUser.Name}, [yellow]Age:[/] {newUser.Year}, [yellow]Password:[/] {new string('*', newUser.Password.Length)}");
+
+    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
+}
+
+
+private static void UpdateUser()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold green]Update User:[/]");
+
+    string name = AnsiConsole.Ask<string>("Enter the name of the user to update:");
+    User? userToUpdate = users.FirstOrDefault(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    if (userToUpdate != null)
     {
-        Console.Write("Enter the name of the user to update: ");
-        string name = Console.ReadLine()!.Trim();
+        string currentPassword = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter your current password:")
+                .PromptStyle("yellow")
+                .Secret()
+        );
 
-        User userToUpdate = users.Find(u => u.Name == name)!;
-
-        if (userToUpdate != null)
+        if (currentPassword != userToUpdate.Password)
         {
-            string newName;
-            int newAge;
-            string newPassword;
-
-            Console.Write("Enter new name: ");
-            newName = Console.ReadLine()!.Trim();
-
-            while (string.IsNullOrWhiteSpace(newName))
-            {
-                Console.Write("Name cannot be empty. Please enter again: ");
-                newName = Console.ReadLine()!.Trim();
-            }
-
-            Console.Write("Enter new age: ");
-            while (!int.TryParse(Console.ReadLine(), out newAge) || newAge <= 0 || newAge >= 100)
-            {
-                Console.Write("Invalid age. Enter a valid age (0-100): ");
-            }
-
-            Console.Write("Enter new password (at least 6 characters): ");
-            newPassword = Console.ReadLine()!.Trim();
-
-            while (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
-            {
-                Console.Write("Password must be at least 6 characters. Try again: ");
-                newPassword = Console.ReadLine()!.Trim();
-            }
-
-            userToUpdate.Name = newName;
-            userToUpdate.Year = newAge;
-            userToUpdate.Password = newPassword;
-
-            Console.WriteLine("User updated successfully.");
-        }
-        else
-        {
-            Console.WriteLine("User not found.");
+            AnsiConsole.Markup("[red]Incorrect password. Update canceled.[/]");
+            System.Console.WriteLine();
+            AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
+            return;
         }
 
-        Thread.Sleep(3000);
+        string newName = AnsiConsole.Ask<string>("Enter new name:");
+
+        while (string.IsNullOrWhiteSpace(newName))
+        {
+            AnsiConsole.Markup("[red]Name cannot be empty. Please enter again:[/]");
+            newName = AnsiConsole.Ask<string>("Enter new name:");
+        }
+
+        int newAge;
+        do
+        {
+            newAge = AnsiConsole.Ask<int>("Enter new age (1-99):");
+
+            if (newAge <= 0 || newAge >= 100)
+            {
+                AnsiConsole.Markup("[red]Invalid age. Please enter a valid age (1-99):[/]");
+            }
+
+        } while (newAge <= 0 || newAge >= 100);
+
+        string newPassword = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter new password (at least 6 characters):")
+                .PromptStyle("yellow")
+                .Secret()
+                .Validate(pw => pw.Length >= 6 
+                    ? ValidationResult.Success() 
+                    : ValidationResult.Error("[red]Password must be at least 6 characters.[/]"))
+        );
+
+        userToUpdate.Name = newName;
+        userToUpdate.Year = newAge;
+        userToUpdate.Password = newPassword;
+
+        AnsiConsole.MarkupLine("[green]User updated successfully.[/]");
+    }
+    else
+    {
+        AnsiConsole.Markup("[red]User not found.[/]");
+        System.Console.WriteLine();
     }
 
-    private static void DeleteUser()
+    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
+}
+
+private static void DeleteUser()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold red]Delete User:[/]");
+
+    string name = AnsiConsole.Ask<string>("Enter the name of the user to delete:");
+
+    User? userToDelete = users.FirstOrDefault(u => u.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+    if (userToDelete != null)
     {
-        Console.Write("Enter the name of the user to delete: ");
-        string name = Console.ReadLine()!.Trim();
+        string password = AnsiConsole.Prompt(
+            new TextPrompt<string>("Enter the password to confirm deletion:")
+                .PromptStyle("yellow")
+                .Secret()
+        );
 
-        User userToDelete = users.Find(u => u.Name == name)!;
-
-        if (userToDelete != null)
+        if (userToDelete.Password == password)
         {
             users.Remove(userToDelete);
-            Console.WriteLine("User deleted successfully.");
+            AnsiConsole.MarkupLine("[green]User deleted successfully.[/]");
         }
         else
         {
-            Console.WriteLine("User not found.");
+            AnsiConsole.Markup("[red]Incorrect password. User deletion cancelled.[/]");
+            Console.WriteLine();
         }
-
-        Thread.Sleep(3000);
+    }
+    else
+    {
+        AnsiConsole.Markup("[red]User not found.[/]");
+        Console.WriteLine();
     }
 
-    private static void Magazines()
+    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
+}
+private static void Magazines()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Magazines[/]");
+
+    if (magazines.Count == 0)
     {
-        if(magazines.Count == 0)
+        AnsiConsole.Markup("[red]Magazines are empty.[/]");
+    }
+    else
+    {
+        var table = new Table();
+        table.AddColumn("[bold]ID[/]");
+        table.AddColumn("[bold]Title[/]");
+        table.AddColumn("[bold]Publisher[/]");
+        table.AddColumn("[bold]Issue Number[/]");
+        table.AddColumn("[bold]Year[/]");
+
+        foreach (var magazine in magazines)
         {
-            System.Console.WriteLine("Magazines are empty");
+            table.AddRow(magazine.IssueNumber.ToString(), magazine.Title!, magazine.PublicationYear.ToString(), 
+                         magazine.IssueNumber.ToString(), magazine.PublicationYear.ToString());
         }
-        else
-        {
-            foreach (var magazine in magazines)
+
+        AnsiConsole.Write(table);
+    }
+
+    AnsiConsole.MarkupLine("\nPress any key to return...");
+    Console.ReadKey();
+}
+
+private static void SearchBooks()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Search Books and Magazines[/]");
+    AnsiConsole.MarkupLine("Search by: [yellow]1)[/] Title, [yellow]2)[/] Author, [yellow]3)[/] ISBN");
+
+    string choice = AnsiConsole.Ask<string>("Enter your choice:");
+
+    switch (choice)
+    {
+        case "1" or "title":
+            string title = AnsiConsole.Ask<string>("Enter book/magazine title to search:").Trim();
+            if (string.IsNullOrWhiteSpace(title))
             {
-                Console.WriteLine(magazine.ToString());
+                AnsiConsole.Markup("[red]Invalid input! Title cannot be empty.[/]");
+                Console.WriteLine();
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+                return;
             }
-        }
-    }
 
- private static void SearchBooks()
-    {
-        Console.WriteLine("Search by: 1) Title, 2) Author, 3) ISBN");
-        Console.Write("Enter your choice: ");
-        string choice = Console.ReadLine()!.Trim().ToLower();
+            bool foundTitle = false;
 
-        switch (choice)
-        {
-            case "1" or "title":
-                Console.Write("Enter book/magazine title to search: ");
-                string title = Console.ReadLine()!.Trim();
-                bool foundTitle = false;
-
-                Console.WriteLine("Books:");
-                for (int i = 0; i < books.Count; i++)
-                {
-                    if (books[i].Title != null && books[i].Title!.Equals(title, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine(books[i].ToString());
-                        foundTitle = true;
-                    }
-                }
-
-                Console.WriteLine("Magazines:");
-                for (int i = 0; i < magazines.Count; i++)
-                {
-                    if (magazines[i].Title != null && magazines[i].Title!.Equals(title, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine(magazines[i].ToString());
-                        foundTitle = true;
-                    }
-                }
-
-                if (!foundTitle)
-                {
-                    Console.WriteLine("No books or magazines found by that title.");
-                    Thread.Sleep(2000);
-                }
-                break;
-
-            case "2" or "author":
-                Console.Write("Enter author to search: ");
-                string author = Console.ReadLine()!.Trim();
-                bool foundAuthor = false;
-
-                for (int i = 0; i < books.Count; i++)
-                {
-                    if (books[i].Author != null && books[i].Author!.Equals(author, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine(books[i].ToString());
-                        foundAuthor = true;
-                    }
-                }
-
-                if (!foundAuthor)
-                {
-                    Console.WriteLine("No books found by that author.");
-                    Thread.Sleep(2000);
-                }
-                break;
-
-            case "3" or "isbn" or "issue number":
-                Console.Write("Enter ISBN to search: ");
-                try
-                {
-                    int isbn = int.Parse(Console.ReadLine()!);
-                    bool foundISBN = false;
-
-                    for (int i = 0; i < books.Count; i++)
-                    {
-                        if (books[i].ISBN == isbn)
-                        {
-                            Console.WriteLine(books[i].ToString());
-                            foundISBN = true;
-                        }
-                    }
-
-                    for (int i = 0; i < magazines.Count; i++)
-                    {
-                        if (magazines[i].IssueNumber == isbn)
-                        {
-                            Console.WriteLine(magazines[i].ToString());
-                            foundISBN = true;
-                        }
-                    }
-
-                    if (!foundISBN)
-                    {
-                        Console.WriteLine("No books or magazines found with that ISBN.");
-                        Thread.Sleep(2000);
-                    }
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Invalid input! Please enter a valid ISBN number.");
-                    Thread.Sleep(3500);
-                }
-                break;
-
-            default:
-                Console.WriteLine("Invalid choice! Please choose 1, 2, or 3.");
-                Thread.Sleep(2000);
-                break;
-        }
-    }
-
-    private static void Books()
-    {
-        if(books.Count == 0)
-        {
-            System.Console.WriteLine("Books are empty");
-        }
-        else
-        {
+            AnsiConsole.MarkupLine("[bold yellow]Books:[/]");
             foreach (var book in books)
             {
-                Console.WriteLine(book.ToString());
+                if (book.Title != null && book.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                {
+                    AnsiConsole.MarkupLine(book.ToString());
+                    foundTitle = true;
+                }
             }
-        }
+
+            AnsiConsole.MarkupLine("[bold yellow]Magazines:[/]");
+            foreach (var magazine in magazines)
+            {
+                if (magazine.Title != null && magazine.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                {
+                    AnsiConsole.MarkupLine(magazine.ToString());
+                    foundTitle = true;
+                }
+            }
+
+            if (!foundTitle)
+            {
+                AnsiConsole.Markup("[red]No books or magazines found by that title.[/]");
+                Console.WriteLine();
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+            }
+            else
+            {
+                AnsiConsole.Markup("[yellow]Press any key to continue...[/]");
+                Console.ReadKey(); 
+            }
+            break;
+
+        case "2" or "author":
+            string author = AnsiConsole.Ask<string>("Enter author to search:").Trim();
+            if (string.IsNullOrWhiteSpace(author))
+            {
+                AnsiConsole.Markup("[red]Invalid input! Author cannot be empty.[/]");
+                Console.WriteLine();
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+                return;
+            }
+
+            bool foundAuthor = false;
+
+            foreach (var book in books)
+            {
+                if (book.Author != null && book.Author.Equals(author, StringComparison.OrdinalIgnoreCase))
+                {
+                    AnsiConsole.MarkupLine(book.ToString());
+                    foundAuthor = true;
+                }
+            }
+
+            if (!foundAuthor)
+            {
+                AnsiConsole.Markup("[red]No books found by that author.[/]");
+                Console.WriteLine();
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+            }
+            else
+            {
+                AnsiConsole.Markup("[yellow]Press any key to continue...[/]");
+                Console.ReadKey(); 
+            }
+            break;
+
+        case "3" or "isbn" or "issue number":
+            try
+            {
+                int isbn = AnsiConsole.Ask<int>("Enter ISBN to search:");
+                bool foundISBN = false;
+
+                foreach (var book in books)
+                {
+                    if (book.ISBN == isbn)
+                    {
+                        AnsiConsole.MarkupLine(book.ToString());
+                        foundISBN = true;
+                    }
+                }
+
+                foreach (var magazine in magazines)
+                {
+                    if (magazine.IssueNumber == isbn)
+                    {
+                        AnsiConsole.MarkupLine(magazine.ToString());
+                        foundISBN = true;
+                    }
+                }
+
+                if (!foundISBN)
+                {
+                    AnsiConsole.Markup("[red]No books or magazines found with that ISBN.[/]");
+                    Console.WriteLine();
+                    AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+                }
+                else
+                {
+                    AnsiConsole.Markup("[yellow]Press any key to continue...[/]");
+                    Console.ReadKey(); 
+                }
+            }
+            catch (FormatException)
+            {
+                AnsiConsole.Markup("[red]Invalid input! Please enter a valid ISBN number.[/]");
+                Console.WriteLine();
+                AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+            }
+            break;
+
+        default:
+            AnsiConsole.Markup("[red]Invalid choice! Please choose 1, 2, or 3.[/]");
+            Console.WriteLine();
+            AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+            break;
     }
+}
+
+private static void Books()
+{
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]List of Books[/]");
+
+    if (books.Count == 0)
+    {
+        AnsiConsole.MarkupLine("[red]No books available.[/]");
+        Console.WriteLine();
+    }
+    else
+    {
+        AnsiConsole.MarkupLine("[bold yellow]Available Books:[/]");
+
+        var table = new Table();
+        table.AddColumn("[bold]ID[/]");
+        table.AddColumn("[bold]Title[/]");
+        table.AddColumn("[bold]Author[/]");
+        table.AddColumn("[bold]Year[/]");
+
+        foreach (var book in books)
+        {
+            table.AddRow(book.ISBN.ToString(), book.Title!, book.Author!, book.PublicationYear.ToString());
+        }
+
+        AnsiConsole.Write(table);
+    }
+
+    Console.WriteLine();
+    AnsiConsole.MarkupLine("[bold yellow]Press any key to go back to the main menu...[/]");
+    Console.ReadKey(true); 
+    }
+
+
 
 private static void Bron()
 {
+    AnsiConsole.Clear();
+    AnsiConsole.MarkupLine("[bold cyan]Reserve Books or Magazines[/]");
+
     bool hasAvailableBooks = books.Any(b => !b.isReversed);
     bool hasAvailableMagazines = magazines.Any(m => !m.isReversed);
 
     if (!hasAvailableBooks && !hasAvailableMagazines)
     {
-        Console.WriteLine("There are no books or magazines available to reserve.");
-        Thread.Sleep(2000);
+        AnsiConsole.MarkupLine("[red]There are no books or magazines available to reserve.[/]");
+        Console.WriteLine();
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
         return;
     }
 
-    Console.WriteLine("Available books:");
-    foreach (var book in books)
+    if (hasAvailableBooks)
     {
-        if (!book.isReversed) 
+        AnsiConsole.MarkupLine("[bold yellow]Available books:[/]");
+        foreach (var book in books.Where(b => !b.isReversed))
         {
-            Console.WriteLine(book.ToString());
+            AnsiConsole.MarkupLine($"[green]{book.ToString()}[/]");
         }
+        Console.WriteLine();
     }
-    Console.WriteLine();
-    
-    Console.WriteLine("Available magazines:");
-    foreach (var magazine in magazines)
+
+    if (hasAvailableMagazines)
     {
-        if (!magazine.isReversed) 
+        AnsiConsole.MarkupLine("[bold yellow]Available magazines:[/]");
+        foreach (var magazine in magazines.Where(m => !m.isReversed))
         {
-            Console.WriteLine(magazine.ToString());
+            AnsiConsole.MarkupLine($"[green]{magazine.ToString()}[/]");
         }
+        Console.WriteLine();
     }
-    Console.WriteLine();
-    
-    Console.Write("Enter ISBN to reserve book/magazine: ");
+
+    string isbnInput = AnsiConsole.Ask<string>("Enter [yellow]ISBN[/] to reserve book/magazine:");
+
     try
     {
-        int isbn = int.Parse(Console.ReadLine()!);
+        int isbn = int.Parse(isbnInput);
 
-        Book? bookToReserve = null;
-        foreach (var book in books)
-        {
-            if (book.ISBN == isbn)
-            {
-                if (book.isReversed) 
-                {
-                    Console.WriteLine("This book is already reserved.");
-                    Thread.Sleep(2000);
-                    return; 
-                }
-                bookToReserve = book;
-                break;
-            }
-        }
-
-        Magazine? magazineToReserve = null;
-        foreach (var magazine in magazines)
-        {
-            if (magazine.IssueNumber == isbn)
-            {
-                if (magazine.isReversed)
-                {
-                    Console.WriteLine("This magazine is already reserved.");
-                    return; 
-                }
-                magazineToReserve = magazine;
-                break;
-            }
-        }
+        Book? bookToReserve = books.FirstOrDefault(b => b.ISBN == isbn && !b.isReversed);
+        Magazine? magazineToReserve = magazines.FirstOrDefault(m => m.IssueNumber == isbn && !m.isReversed);
 
         if (bookToReserve != null)
         {
-            bookToReserve.Reverse(); 
-            Console.WriteLine("Book is reserved.");
-            Thread.Sleep(3000);
+            bookToReserve.Reverse();
+            AnsiConsole.MarkupLine("[green]Book has been reserved successfully![/]");
         }
         else if (magazineToReserve != null)
         {
-            magazineToReserve.Reverse(); 
-            Console.WriteLine("Magazine is reserved.");
-            Thread.Sleep(3000);
+            magazineToReserve.Reverse();
+            AnsiConsole.MarkupLine("[green]Magazine has been reserved successfully![/]");
         }
         else
         {
-            Console.WriteLine("No available book or magazine found with that ISBN.");
+            AnsiConsole.MarkupLine("[red]No available book or magazine found with that ISBN.[/]");
         }
+
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
     }
     catch (FormatException)
     {
-        Console.WriteLine("Invalid input! Please enter a valid ISBN number.");
+        AnsiConsole.MarkupLine("[red]Invalid input! Please enter a valid ISBN number.[/]");
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
     }
 }
-
 
 
     
@@ -598,17 +714,8 @@ private static void Bron()
         string submenu = "";
         while(submenu != "0")
         {
-            Console.Clear();
-            Console.WriteLine();
-            System.Console.WriteLine("Submenu");
-            Console.WriteLine("1. Add");
-            Console.WriteLine("2. Update");
-            Console.WriteLine("3. Delete");
-            Console.WriteLine("0. Menu");
-            Console.WriteLine();
-
-            Console.Write("Enter the submenu name or number: ");
-            submenu = Console.ReadLine()!.Trim().ToLower();
+            submenu = Submenu();
+           
             switch (submenu)
             {
                 case "1" or "add":
@@ -638,365 +745,262 @@ private static void Bron()
             Console.Clear();
         }
     }
+
+    private static string Submenu()
+    {
+        AnsiConsole.Clear();
+
+    AnsiConsole.Write(
+        new FigletText("Submenu")
+            .Centered()
+            .Color(Color.Blue));
+
+    var submenuSelection = AnsiConsole.Prompt(
+        new SelectionPrompt<string>()
+            .Title("Please select a [blue]submenu option with arrows[/]")
+            .PageSize(5)
+            .MoreChoicesText("[grey](Move up and down to reveal more options)[/]")
+            .AddChoices(new[]
+            {
+                "1. Add",
+                "2. Update",
+                "3. Delete",
+                "0. Menu"
+            }));
+
+        return submenuSelection.ToLower()[0].ToString();
+    }
 private static void Delete()
 {
-    foreach(var i in books)
+    AnsiConsole.Clear();
+
+    if (books.Count == 0 && magazines.Count == 0)
     {
-        i.ToString();
+        AnsiConsole.MarkupLine("[red]Error! Library is empty.[/]");
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
+        return;
     }
-    foreach(var i in magazines)
+
+    var table = new Table();
+    table.AddColumn("Type");
+    table.AddColumn("Title");
+    table.AddColumn("Author");
+    table.AddColumn("Year");
+    table.AddColumn("ISBN/Issue");
+
+    foreach (var book in books)
     {
-        i.ToString();
+        table.AddRow("Book", book.Title!, book.Author!, book.PublicationYear.ToString(), book.ISBN.ToString());
     }
 
-    if(books.Count > 0 || magazines.Count > 0)
+    foreach (var magazine in magazines)
     {
-        Console.WriteLine();
-        Console.Write("Enter ISBN to delete book/magazine: ");
-        int isbn = int.Parse(Console.ReadLine()!);
+        table.AddRow("Magazine", magazine.Title!, magazine.Author!, magazine.PublicationYear.ToString(), magazine.IssueNumber.ToString());
+    }
 
-        var bookToDelete = books.FirstOrDefault(b => b.ISBN == isbn);  
-        var magazineToDelete = magazines.FirstOrDefault(m => m.IssueNumber == isbn);  
+    AnsiConsole.Write(table);
 
-        if (bookToDelete != null)
-        {
-            books.Remove(bookToDelete);  
-            Console.WriteLine("Book is deleted");
-            Thread.Sleep(3000);
-        }
-        else if(magazineToDelete != null )
-        {
-            magazines.Remove(magazineToDelete);  
-            Console.WriteLine("Magazine is deleted");
-            Thread.Sleep(3000);
-        }
-        else
-        {
-            Console.WriteLine("Book not found");
-            Thread.Sleep(2000);
-        }
+    int isbn = AnsiConsole.Ask<int>("[yellow]Enter ISBN to delete book/magazine:[/]");
+
+    var bookToDelete = books.FirstOrDefault(b => b.ISBN == isbn);
+    var magazineToDelete = magazines.FirstOrDefault(m => m.IssueNumber == isbn);
+
+    if (bookToDelete != null)
+    {
+        books.Remove(bookToDelete);
+        AnsiConsole.MarkupLine("[green]Book has been deleted![/]");
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
+    }
+    else if (magazineToDelete != null)
+    {
+        magazines.Remove(magazineToDelete);
+        AnsiConsole.MarkupLine("[green]Magazine has been deleted![/]");
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(3000));
     }
     else
     {
-        System.Console.WriteLine("Error! Library is empty");
-        Thread.Sleep(2000);
+        AnsiConsole.MarkupLine("[red]Item not found![/]");
+        AnsiConsole.Status().Start("Waiting...", ctx => Thread.Sleep(2000));
     }
 }
-
-
-   private static void Update()
+private static void Update()
 {
     if (books.Count == 0 && magazines.Count == 0)
     {
-        Console.WriteLine("No books or magazines available to update.");
-        Thread.Sleep(2000);
+        AnsiConsole.MarkupLine("[red]No books or magazines available to update.[/]");
+        AnsiConsole.Status()
+            .Start("Waiting...", ctx => Thread.Sleep(2000));
         return;
     }
-    
-    string type = "";
-    while (type != "book" && type != "magazine")
-    {
-        Console.Write("Enter the type (book or magazine) to update: ");
-        type = Console.ReadLine()!.Trim().ToLower();
 
-        if (type != "book" && type != "magazine")
-        {
-            Console.WriteLine("Invalid type. Please enter 'book' or 'magazine'.");
-        }
-    }
+    var type = AnsiConsole.Prompt(
+        new SelectionPrompt<string>()
+            .Title("Enter the [green]type[/] (book or magazine) to update:")
+            .AddChoices(new[] { "book", "magazine" }));
 
     if (type == "book")
     {
         if (books.Count == 0)
         {
-            Console.WriteLine("No books available to update.");
-            Thread.Sleep(2000);
+            AnsiConsole.MarkupLine("[red]No books available to update.[/]");
+            AnsiConsole.Status()
+                .Start("Waiting...", ctx => Thread.Sleep(2000));
             return;
         }
 
-        Book? bookToUpdate = null;
-        while (bookToUpdate == null)
+        var title = AnsiConsole.Ask<string>("[green]Enter the book name to update:[/]");
+        Book? bookToUpdate = books.Find(book => book.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+
+        if (bookToUpdate == null)
         {
-            Console.Write("Enter the book name to update: ");
-            string title = Console.ReadLine()!.Trim();
-
-            for (int i = 0; i < books.Count; i++)
-            {
-                if (books[i].Title != null && books[i].Title!.Equals(title, StringComparison.OrdinalIgnoreCase))
-                {
-                    bookToUpdate = books[i];
-                    break;
-                }
-            }
-
-            if (bookToUpdate == null)
-            {
-                Console.WriteLine("Book not found. Try again.");
-            }
+            AnsiConsole.MarkupLine("[red]Book not found. Try again.[/]");
+            AnsiConsole.Status()
+                .Start("Waiting...", ctx => Thread.Sleep(2000));
+            return;
         }
 
-        string newTitle = "";
-        while (string.IsNullOrWhiteSpace(newTitle))
-        {
-            Console.Clear();
-            System.Console.WriteLine();
-            Console.Write("Enter the new book title: ");
-            newTitle = Console.ReadLine()!.Trim();
-            if (string.IsNullOrWhiteSpace(newTitle))
-            {
-                Console.WriteLine("Invalid input! Title cannot be empty.");
-            }
-        }
-
-        string newAuthor = "";
-        while (string.IsNullOrWhiteSpace(newAuthor))
-        {
-            Console.Write("Enter the new book author: ");
-            newAuthor = Console.ReadLine()!.Trim();
-            if (string.IsNullOrWhiteSpace(newAuthor))
-            {
-                Console.WriteLine("Invalid input! Author cannot be empty.");
-            }
-        }
-
-        int newYear = -1;
-        while (newYear < 0)
-        {
-            Console.Write("Enter the new publication year: ");
-            try
-            {
-                newYear = int.Parse(Console.ReadLine()!.Trim());
-                if (newYear < 0)
-                {
-                    Console.WriteLine("Publication year cannot be negative.");
-                }
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("Invalid input! Please enter a valid year.");
-            }
-        }
+        var newTitle = AnsiConsole.Ask<string>("[green]Enter the new book title:[/]");
+        var newAuthor = AnsiConsole.Ask<string>("[green]Enter the new book author:[/]");
+        var newYear = AnsiConsole.Ask<int>("[green]Enter the new publication year:[/]");
 
         bookToUpdate.Title = newTitle;
         bookToUpdate.Author = newAuthor;
         bookToUpdate.PublicationYear = newYear;
 
-        Console.WriteLine("The book has been updated successfully!");
-        Thread.Sleep(3000);
+        AnsiConsole.MarkupLine("[green]The book has been updated successfully![/]");
+        AnsiConsole.Status()
+            .Start("Waiting...", ctx => Thread.Sleep(3000));
     }
     else if (type == "magazine")
     {
         if (magazines.Count == 0)
         {
-            Console.WriteLine("No magazines available to update.");
-            Thread.Sleep(2000);
-
+            AnsiConsole.MarkupLine("[red]No magazines available to update.[/]");
+            AnsiConsole.Status()
+                .Start("Waiting...", ctx => Thread.Sleep(2000));
             return;
         }
 
-        Magazine? magazineToUpdate = null;
-        while (magazineToUpdate == null)
+        var title = AnsiConsole.Ask<string>("[green]Enter the magazine title to update:[/]");
+        Magazine? magazineToUpdate = magazines.Find(mag => mag.Title.Equals(title, StringComparison.OrdinalIgnoreCase));
+
+        if (magazineToUpdate == null)
         {
-            Console.Write("Enter the magazine title to update: ");
-            string title = Console.ReadLine()!.Trim();
-
-            for (int i = 0; i < magazines.Count; i++)
-            {
-                if (magazines[i].Title != null && magazines[i].Title!.Equals(title, StringComparison.OrdinalIgnoreCase))
-                {
-                    magazineToUpdate = magazines[i];
-                    break;
-                }
-            }
-
-            if (magazineToUpdate == null)
-            {
-                Console.WriteLine("Magazine not found. Try again.");
-            }
+            AnsiConsole.MarkupLine("[red]Magazine not found. Try again.[/]");
+            AnsiConsole.Status()
+                .Start("Waiting...", ctx => Thread.Sleep(2000));
+            return;
         }
 
-        string newTitle = "";
-        while (string.IsNullOrWhiteSpace(newTitle))
-        {
-            Console.Clear();
-            System.Console.WriteLine();
-            Console.Write("Enter the new magazine title: ");
-            newTitle = Console.ReadLine()!.Trim();
-            if (string.IsNullOrWhiteSpace(newTitle))
-            {
-                Console.WriteLine("Invalid input! Title cannot be empty.");
-            }
-        }
-
-        string newAuthor = "";
-        while (string.IsNullOrWhiteSpace(newAuthor))
-        {
-            Console.Write("Enter the new magazine author: ");
-            newAuthor = Console.ReadLine()!.Trim();
-            if (string.IsNullOrWhiteSpace(newAuthor))
-            {
-                Console.WriteLine("Invalid input! Author cannot be empty.");
-            }
-        }
-
-        int newYear = -1;
-        while (newYear < 0)
-        {
-            Console.Write("Enter the new publication year: ");
-            try
-            {
-                newYear = int.Parse(Console.ReadLine()!.Trim());
-                if (newYear < 0)
-                {
-                    Console.WriteLine("Publication year cannot be negative.");
-                }
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("Invalid input! Please enter a valid year.");
-            }
-        }
+        var newTitle = AnsiConsole.Ask<string>("[green]Enter the new magazine title:[/]");
+        var newAuthor = AnsiConsole.Ask<string>("[green]Enter the new magazine author:[/]");
+        var newYear = AnsiConsole.Ask<int>("[green]Enter the new publication year:[/]");
 
         magazineToUpdate.Title = newTitle;
         magazineToUpdate.Author = newAuthor;
         magazineToUpdate.PublicationYear = newYear;
 
-        Console.WriteLine("The magazine has been updated successfully!");
-        Thread.Sleep(3000);
+        AnsiConsole.MarkupLine("[green]The magazine has been updated successfully![/]");
+        AnsiConsole.Status()
+            .Start("Waiting...", ctx => Thread.Sleep(3000));
     }
 }
 
+private static void Add()
+{
+    AnsiConsole.Clear();
 
-    private static void Add()
+    AnsiConsole.Write(
+        new FigletText("Add Book/Magazine")
+            .Centered()
+            .Color(Color.Blue));
+
+    AnsiConsole.MarkupLine("[bold yellow]Please enter the book/magazine details:[/]");
+
+    string title = AnsiConsole.Ask<string>("[bold yellow]Title:[/]");
+    while (title.Length < 2)
     {
-        bool isTitle = false;
-        bool isAuthor = false;
-        bool isYear = false;
-        bool isType = false;
-
-        Console.WriteLine("Please enter the book/magazine details:");
-
-        Console.Write("Title: ");
-        string title = Console.ReadLine()!.Trim();
-        while (!isTitle)
-        {
-            if (title.Length >= 2)
-            {
-                isTitle = true;
-            }
-            else
-            {
-                Console.WriteLine("Invalid title. Please retry:");
-                Console.Write("Title: ");
-                title = Console.ReadLine()!.Trim();
-            }
-        }
-
-        Console.Write("Author: ");
-        string author = Console.ReadLine()!.Trim();
-        while (!isAuthor)
-        {
-            if (author.Length >= 3)
-            {
-                isAuthor = true;
-            }
-            else
-            {
-                Console.WriteLine("Invalid author name. Please retry:");
-                Console.Write("Author: ");
-                author = Console.ReadLine()!.Trim();
-            }
-        }
-
-        int year = 0;
-        while (!isYear)
-        {
-            try
-            {
-                Console.Write("Publication Year: ");
-                year = int.Parse(Console.ReadLine()!);
-
-                if (year < 0 || year > DateTime.Now.Year)
-                {
-                    Console.WriteLine("Invalid year. Please retry.");
-                }
-                else
-                {
-                    isYear = true;
-                }
-            }
-            catch (FormatException)
-            {
-                Console.WriteLine("The year must be a number. Please try again.");
-            }
-        }
-
-        Console.Write("Enter the type (book or magazine): ");
-        string type = Console.ReadLine()!.Trim();
-        while (!isType)
-        {
-            if (type.Length > 0 && (type == "book" || type == "magazine"))
-            {
-                isType = true;
-            }
-            else
-            {
-                Console.WriteLine("Invalid type. Please enter 'book' or 'magazine'.");
-                Console.Write("Type: ");
-                type = Console.ReadLine()!.Trim();
-            }
-        }
-
-        if (isTitle && isAuthor && isYear && isType)
-        {
-            Random random = new Random();
-            int isbn = random.Next(1000000, 1000000000);
-
-            if (type == "book")
-            {
-                Book newBook = new Book
-                {
-                    Title = title,
-                    Author = author,
-                    PublicationYear = year,
-                    ISBN = isbn
-                };
-                books.Add(newBook);
-                Console.WriteLine("The book has been successfully added!");
-            }
-            else if (type == "magazine")
-            {
-                Magazine newMagazine = new Magazine
-                {
-                    Title = title,
-                    Author = author,
-                    PublicationYear = year,
-                    IssueNumber = isbn 
-                };
-                magazines.Add(newMagazine);
-                Console.WriteLine("The magazine has been successfully added!");
-            }
-        }
+        AnsiConsole.MarkupLine("[red]Invalid title. Please retry (minimum 2 characters):[/]");
+        title = AnsiConsole.Ask<string>("[bold yellow]Title:[/]");
     }
 
-    static string Menu()
+    string author = AnsiConsole.Ask<string>("[bold yellow]Author:[/]");
+    while (author.Length < 3)
     {
-        System.Console.WriteLine();
-        Console.WriteLine("Library Menu");
-        Console.WriteLine("1. Manage");
-        Console.WriteLine("2. Registeration");
-        Console.WriteLine("3. Library Reservations");
-        Console.WriteLine("4. Books");
-        Console.WriteLine("5. Magazines");
-        Console.WriteLine("6. Search");
-        Console.WriteLine("7. Users");
-        Console.WriteLine("0. Close");
+        AnsiConsole.MarkupLine("[red]Invalid author name. Please retry (minimum 3 characters):[/]");
+        author = AnsiConsole.Ask<string>("[bold yellow]Author:[/]");
+    }
 
-        Console.WriteLine();
-        Console.Write("Please enter the menu number or menu name: ");
-        string menu = Console.ReadLine()!.Trim();
+    int year = 0;
+    while (true)
+    {
+        year = AnsiConsole.Ask<int>("[bold yellow]Publication Year:[/]");
+        if (year >= 0 && year <= DateTime.Now.Year)
+        {
+            break;
+        }
+        AnsiConsole.MarkupLine("[red]Invalid year. Please retry.[/]");
+    }
 
-        return menu;
+    string type = AnsiConsole.Prompt(
+        new SelectionPrompt<string>()
+            .Title("[bold yellow]Enter the type (book or magazine):[/]")
+            .AddChoices(new[] { "book", "magazine" }));
+
+    Random random = new Random();
+    int isbn = random.Next(1000000, 1000000000);
+
+    if (type == "book")
+    {
+        Book newBook = new Book
+        {
+            Title = title,
+            Author = author,
+            PublicationYear = year,
+            ISBN = isbn
+        };
+        books.Add(newBook);
+        AnsiConsole.MarkupLine("[green]The book has been successfully added![/]");
+    }
+    else if (type == "magazine")
+    {
+        Magazine newMagazine = new Magazine
+        {
+            Title = title,
+            Author = author,
+            PublicationYear = year,
+            IssueNumber = isbn
+        };
+        magazines.Add(newMagazine);
+        AnsiConsole.MarkupLine("[green]The magazine has been successfully added![/]");
+    }
+}    static string Menu()
+    {
+    AnsiConsole.Clear();
+
+        AnsiConsole.Write(
+            new FigletText("Library Menu")
+                .Centered()
+                .Color(Color.Green));
+
+        var selection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Please select a [green]menu option with arrows[/]")
+                .PageSize(10)
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]")
+                .AddChoices(new[]
+                {
+                    "1. Manage",
+                    "2. Registration",
+                    "3. Library Reservations",
+                    "4. Books",
+                    "5. Magazines",
+                    "6. Search",
+                    "7. Users",
+                    "0. Close"
+                }));
+
+        return selection[0].ToString();
     }
 }
 
@@ -1078,10 +1082,12 @@ class Book : Library, IBorrowable, ISearchable
         Console.WriteLine(isReversed ? "Book borrowing reversed." : "Book borrowing restored.");
     }
 
-    public override string ToString()
+   public override string ToString()
     {
-        return $"Book Title: {Title}, Author: {Author}, Year: {PublicationYear}, ISBN: {ISBN} isBron: {isReversed}";
+        var reservationStatus = isReversed ? "[red]Reserved[/]" : "[green]Available[/]";
+        return $"[bold yellow]Book Title:[/] {Title}, [bold yellow]Author:[/] {Author}, [bold yellow]Year:[/] {PublicationYear}, [bold yellow]ISBN:[/] {ISBN}, [bold yellow]Status:[/] {reservationStatus}";
     }
+
 }
 
 class Magazine : Library, IBorrowable, ISearchable
@@ -1130,7 +1136,8 @@ class Magazine : Library, IBorrowable, ISearchable
 
     public override string ToString()
     {
-        return $"Magazine Title: {Title}, Author: {Author}, Year: {PublicationYear}, Issue Number: {IssueNumber} isBron: {isReversed}";
+        var reservationStatus = isReversed ? "[red]Reserved[/]" : "[green]Available[/]";
+        return $"[bold yellow]Magazine Title:[/] {Title}, [bold yellow]Author:[/] {Author}, [bold yellow]Year:[/] {PublicationYear}, [bold yellow]Issue Number:[/] {IssueNumber}, [bold yellow]Status:[/] {reservationStatus}";
     }
 }
 

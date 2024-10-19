@@ -40,3 +40,4 @@ C:\Users\Hp\Desktop\TELEGRAMPROBLEMS\LibraryManagement\obj\Debug\net8.0\refint\k
 C:\Users\Hp\Desktop\TELEGRAMPROBLEMS\LibraryManagement\obj\Debug\net8.0\kutubxona.pdb
 C:\Users\Hp\Desktop\TELEGRAMPROBLEMS\LibraryManagement\obj\Debug\net8.0\kutubxona.genruntimeconfig.cache
 C:\Users\Hp\Desktop\TELEGRAMPROBLEMS\LibraryManagement\obj\Debug\net8.0\ref\kutubxona.dll
+C:\Users\Hp\Desktop\TELEGRAMPROBLEMS\LibraryManagement\obj\Debug\net8.0\kutubxona.sourcelink.json
